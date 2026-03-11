@@ -1,6 +1,15 @@
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
+const DefaultIcon = L.icon({
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
 function MapView() {
 
   const position = [17.3457, 78.5520]; // LB Nagar Hyderabad
