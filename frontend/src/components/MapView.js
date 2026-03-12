@@ -134,6 +134,65 @@ function Legend() {
   return null;
 }
 
+function LocateMe({ setMarker }) {
+
+  const map = useMap();
+
+  const locate = () => {
+
+    if (!navigator.geolocation) {
+      alert("Geolocation not supported");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(async (position) => {
+
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      map.setView([lat, lng], 15);
+
+      try {
+
+        const res = await axios.get("http://127.0.0.1:8000/risk", {
+          params: { lat: lat, lon: lng }
+        });
+
+        setMarker({
+          position: [lat, lng],
+          risk: res.data.risk_score,
+          status: res.data.status
+        });
+
+      } catch (err) {
+        console.error(err);
+      }
+
+    });
+
+  };
+
+  return (
+    <button
+      onClick={locate}
+      style={{
+        position: "absolute",
+        top: "10px",
+        right: "10px",
+        zIndex: 1000,
+        padding: "8px 12px",
+        background: "#1976d2",
+        color: "white",
+        border: "none",
+        borderRadius: "6px",
+        cursor: "pointer"
+      }}
+    >
+      Locate Me
+    </button>
+  );
+}
+
 function MapView() {
 
   const center = [17.3457, 78.5520];
@@ -149,6 +208,8 @@ function MapView() {
       />
 
       <HeatmapLayer />
+
+      <LocateMe setMarker={setMarker} />
 
       <Legend />
 
