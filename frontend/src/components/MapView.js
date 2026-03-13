@@ -9,6 +9,8 @@ import axios from "axios";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
+import { Polyline } from "react-leaflet";
+
 const DefaultIcon = L.icon({
   iconUrl: markerIcon,
   shadowUrl: markerShadow,
@@ -19,13 +21,37 @@ const DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-function ClickHandler({ setMarker, setHeatData, reportMode, setReportLocation }) {
+function ClickHandler({
+  setMarker,
+  setHeatData,
+  routeMode,
+  source,
+  destination,
+  setSource,
+  setDestination,
+  reportMode,
+  setReportLocation
+}){
 
   useMapEvents({
     click: async (e) => {
 
       const lat = e.latlng.lat;
       const lng = e.latlng.lng;
+      
+      if (routeMode) {
+
+  if (!source) {
+    setSource([lat, lng]);
+    alert("Source selected. Now click destination.");
+    return;
+  }
+
+  if (!destination) {
+    setDestination([lat, lng]);
+    return;
+  }
+}
 
       if (reportMode) {
   setReportLocation([lat, lng]);
@@ -200,7 +226,30 @@ function MapView() {
 
   const [reportMode, setReportMode] = useState(false);
 const [reportLocation, setReportLocation] = useState(null);
+  const [source, setSource] = useState(null);
+const [destination, setDestination] = useState(null);
+const [route, setRoute] = useState(null);
+const [routeMode, setRouteMode] = useState(false);
 
+const getRoute = async () => {
+
+  if (!source || !destination) return;
+
+  const url = `https://router.project-osrm.org/route/v1/driving/${source[1]},${source[0]};${destination[1]},${destination[0]}?overview=full&geometries=geojson`;
+
+  const res = await axios.get(url);
+
+  const coords = res.data.routes[0].geometry.coordinates;
+
+  const routeLatLng = coords.map(c => [c[1], c[0]]);
+
+  setRoute(routeLatLng);
+};
+useEffect(() => {
+  if (source && destination) {
+    getRoute();
+  }
+}, [destination]);
  const [heatData, setHeatData] = useState([]);
 
 useEffect(() => {
@@ -250,10 +299,11 @@ useEffect(() => {
   ]);
 }, []);
 
-  return (
+return (
 
-    <MapContainer center={center} zoom={13} style={{ height: "500px", width: "100%" }}>
+<div>
 
+<MapContainer center={center} zoom={13} style={{ height: "500px", width: "100%" }}>
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
@@ -261,35 +311,41 @@ useEffect(() => {
      <HeatmapLayer heatData={heatData} />
       
     <button
-  onClick={(e) => {
-    e.stopPropagation();   // prevents map click
-    setReportMode(true);
-  }}
-  style={{
-    position: "absolute",
-    top: "50px",
-    right: "10px",
-    zIndex: 1000,
-    padding: "8px 12px",
-    background: "#d32f2f",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer"
-  }}
+onClick={()=>{
+setSource(null);
+setDestination(null);
+setRoute(null);
+setRouteMode(false);
+}}
 >
-Report Unsafe Area
+Reset Route
 </button>
       <LocateMe setMarker={setMarker} />
 
       <Legend />
 
-     <ClickHandler
+  <ClickHandler
   setMarker={setMarker}
   setHeatData={setHeatData}
+  routeMode={routeMode}
+  source={source}
+  destination={destination}
+  setSource={setSource}
+  setDestination={setDestination}
   reportMode={reportMode}
   setReportLocation={setReportLocation}
 />
+
+{route && (
+  <Polyline
+    positions={route}
+    pathOptions={{ color: "blue", weight: 5 }}
+  />
+)}
+
+{source && <Marker position={source}><Popup>Source</Popup></Marker>}
+{destination && <Marker position={destination}><Popup>Destination</Popup></Marker>}
+
 
       {marker && (
         <Marker position={marker.position}>
@@ -347,6 +403,44 @@ Submit
 )}
 
     </MapContainer>
+
+<div style={{
+  marginTop: "10px",
+  display: "flex",
+  gap: "10px"
+}}>
+
+<button
+  onClick={() => setReportMode(true)}
+  style={{
+    padding: "8px 12px",
+    background: "#d32f2f",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer"
+  }}
+>
+Report Unsafe Area
+</button>
+
+<button
+  onClick={() => setRouteMode(true)}
+  style={{
+    padding: "8px 12px",
+    background: "#388e3c",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer"
+  }}
+>
+Find Safe Route
+</button>
+
+</div>
+
+</div>
 
   );
 }
