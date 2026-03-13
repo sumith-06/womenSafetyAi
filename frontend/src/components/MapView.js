@@ -63,7 +63,7 @@ function ClickHandler({
 
       try {
 
-  const res = await axios.get("http://127.0.0.1:8000/risk", {
+  const res = await axios.get("/api/risk", {
     params: { lat: lat, lon: lng }
   });
 
@@ -249,7 +249,7 @@ useEffect(() => {
   if (source && destination) {
     getRoute();
   }
-}, [destination]);
+}, [source, destination]);
  const [heatData, setHeatData] = useState([]);
 
 useEffect(() => {
