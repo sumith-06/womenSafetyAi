@@ -22,7 +22,12 @@ def home():
 @app.get("/risk")
 def get_risk(lat: float, lon: float):
 
-    risk = random.randint(0, 100)
+    risk = random.choice([10, 20, 35, 45, 65, 80])
+
+    if lat > 17.34 and lon > 78.54:
+        risk = random.randint(60, 90)
+    else:
+        risk = random.randint(10, 40)
 
     status = "Safe"
     if risk > 60:
@@ -34,3 +39,23 @@ def get_risk(lat: float, lon: float):
         "risk_score": risk,
         "status": status
     }
+from pydantic import BaseModel
+
+class Report(BaseModel):
+    lat: float
+    lon: float
+    description: str
+
+
+reports = []
+
+@app.post("/report")
+def report_area(report: Report):
+
+    reports.append(report)
+
+    return {
+        "message": "Report saved",
+        "total_reports": len(reports)
+    }
+ 

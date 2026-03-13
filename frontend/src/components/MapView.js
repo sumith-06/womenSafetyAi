@@ -19,13 +19,19 @@ const DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-function ClickHandler({ setMarker, setHeatData }) {
+function ClickHandler({ setMarker, setHeatData, reportMode, setReportLocation }) {
 
   useMapEvents({
     click: async (e) => {
 
       const lat = e.latlng.lat;
       const lng = e.latlng.lng;
+
+      if (reportMode) {
+  setReportLocation([lat, lng]);
+  setMarker(null);   // remove marker while reporting
+  return;
+}
 
       console.log("Clicked:", lat, lng);
 
@@ -192,6 +198,9 @@ function MapView() {
 
   const [marker, setMarker] = useState(null);
 
+  const [reportMode, setReportMode] = useState(false);
+const [reportLocation, setReportLocation] = useState(null);
+
  const [heatData, setHeatData] = useState([]);
 
 useEffect(() => {
@@ -250,12 +259,37 @@ useEffect(() => {
       />
 
      <HeatmapLayer heatData={heatData} />
-
+      
+    <button
+  onClick={(e) => {
+    e.stopPropagation();   // prevents map click
+    setReportMode(true);
+  }}
+  style={{
+    position: "absolute",
+    top: "50px",
+    right: "10px",
+    zIndex: 1000,
+    padding: "8px 12px",
+    background: "#d32f2f",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer"
+  }}
+>
+Report Unsafe Area
+</button>
       <LocateMe setMarker={setMarker} />
 
       <Legend />
 
-     <ClickHandler setMarker={setMarker} setHeatData={setHeatData} />
+     <ClickHandler
+  setMarker={setMarker}
+  setHeatData={setHeatData}
+  reportMode={reportMode}
+  setReportLocation={setReportLocation}
+/>
 
       {marker && (
         <Marker position={marker.position}>
@@ -265,6 +299,52 @@ useEffect(() => {
           </Popup>
         </Marker>
       )}
+
+      {reportLocation && (
+  <div style={{
+    position: "absolute",
+    top: "120px",
+    right: "10px",
+    background: "white",
+    padding: "15px",
+    borderRadius: "8px",
+    boxShadow: "0 0 10px rgba(0,0,0,0.3)",
+    zIndex: 1000
+  }}>
+
+    <h4>Report Unsafe Area</h4>
+
+    <textarea
+      id="reportText"
+      placeholder="Describe the issue..."
+      style={{ width: "200px", height: "60px" }}
+    />
+
+    <br /><br />
+
+    <button
+      onClick={async () => {
+
+        const text = document.getElementById("reportText").value;
+
+        await axios.post("http://127.0.0.1:8000/report", {
+          lat: reportLocation[0],
+          lon: reportLocation[1],
+          description: text
+        });
+
+        alert("Report submitted!");
+
+        setReportLocation(null);
+        setReportMode(false);
+
+      }}
+    >
+Submit
+    </button>
+
+  </div>
+)}
 
     </MapContainer>
 
