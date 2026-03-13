@@ -19,7 +19,7 @@ const DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-function ClickHandler({ setMarker }) {
+function ClickHandler({ setMarker, setHeatData }) {
 
   useMapEvents({
     click: async (e) => {
@@ -31,21 +31,26 @@ function ClickHandler({ setMarker }) {
 
       try {
 
-        const res = await axios.get("http://127.0.0.1:8000/risk", {
-          params: { lat: lat, lon: lng }
-        });
+  const res = await axios.get("http://127.0.0.1:8000/risk", {
+    params: { lat: lat, lon: lng }
+  });
 
-        console.log("Risk response:", res.data);
+  console.log("Risk response:", res.data);
 
-        setMarker({
-          position: [lat, lng],
-          risk: res.data.risk_score,
-          status: res.data.status
-        });
+  setMarker({
+    position: [lat, lng],
+    risk: res.data.risk_score,
+    status: res.data.status
+  });
 
-      } catch (err) {
-        console.error(err);
-      }
+  const intensity = res.data.risk_score / 100;
+
+  setHeatData(prev => [...prev, [lat, lng, intensity]]);
+
+} 
+catch (err) {
+  console.error(err);
+}
 
     }
   });
@@ -53,50 +58,34 @@ function ClickHandler({ setMarker }) {
   return null;
 }
 
-function HeatmapLayer() {
+function HeatmapLayer({ heatData }) {
 
   const map = useMap();
 
   useEffect(() => {
 
- const heatData = [
-  [17.3457, 78.5520, 1],   // LB Nagar high risk
-  [17.3465, 78.5530, 1],
-  [17.3470, 78.5515, 0.9],
-  [17.3480, 78.5525, 0.8],
+    if (!heatData.length) return;
 
-  [17.3688, 78.5247, 0.6], // Dilsukhnagar moderate
-  [17.3692, 78.5255, 0.6],
-
-  [17.3567, 78.5430, 0.7], // Kothapet
-  [17.3555, 78.5420, 0.7],
-
-  [17.3715, 78.5696, 0.3], // Nagole safer
-  [17.3720, 78.5680, 0.3]
-];
-
-const heat = L.heatLayer(heatData, {
-  radius: 50,
-  blur: 30,
-  maxZoom: 17,
-  minOpacity: 0.5,
-  gradient: {
-    0.2: "green",
-    0.4: "yellow",
-    0.7: "orange",
-    1.0: "red"
-  }
-}).addTo(map);
+    const heat = L.heatLayer(heatData, {
+      radius: 85,
+blur: 45,
+      maxZoom: 17,
+      gradient: {
+        0.2: "green",
+        0.4: "yellow",
+        0.6: "orange",
+        0.8: "red"
+      }
+    }).addTo(map);
 
     return () => {
       map.removeLayer(heat);
     };
 
-  }, [map]);
+  }, [heatData, map]);
 
   return null;
 }
-
 function Legend() {
 
   const map = useMap();
@@ -128,6 +117,10 @@ function Legend() {
     };
 
     legend.addTo(map);
+
+    return () => {
+  legend.remove();
+};
 
   }, [map]);
 
@@ -199,6 +192,55 @@ function MapView() {
 
   const [marker, setMarker] = useState(null);
 
+ const [heatData, setHeatData] = useState([]);
+
+useEffect(() => {
+  setHeatData([
+
+    // 🔴 LB Nagar (High Risk)
+    [17.3457, 78.5520, 1],
+    [17.3465, 78.5528, 0.95],
+    [17.3470, 78.5515, 0.9],
+
+    // 🟠 Kothapet
+    [17.3567, 78.5430, 0.8],
+    [17.3575, 78.5425, 0.75],
+
+    // 🟡 Dilsukhnagar
+    [17.3688, 78.5247, 0.65],
+    [17.3695, 78.5255, 0.6],
+
+    // 🟢 Nagole (safer)
+    [17.3715, 78.5696, 0.4],
+    [17.3720, 78.5685, 0.35],
+
+    // 🔴 Charminar area
+    [17.3616, 78.4747, 0.9],
+    [17.3625, 78.4755, 0.85],
+
+    // 🟠 Secunderabad
+    [17.4399, 78.4983, 0.75],
+    [17.4405, 78.4970, 0.7],
+
+    // 🟡 Ameerpet
+    [17.4375, 78.4483, 0.65],
+    [17.4380, 78.4470, 0.6],
+
+    // 🟢 Gachibowli (safer)
+    [17.4401, 78.3489, 0.4],
+    [17.4410, 78.3495, 0.35],
+
+    // 🟠 Kukatpally
+    [17.4948, 78.3996, 0.7],
+    [17.4955, 78.4005, 0.65],
+
+    // 🔴 Uppal
+    [17.4050, 78.5591, 0.9],
+    [17.4060, 78.5585, 0.85],
+
+  ]);
+}, []);
+
   return (
 
     <MapContainer center={center} zoom={13} style={{ height: "500px", width: "100%" }}>
@@ -207,13 +249,13 @@ function MapView() {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      <HeatmapLayer />
+     <HeatmapLayer heatData={heatData} />
 
       <LocateMe setMarker={setMarker} />
 
       <Legend />
 
-      <ClickHandler setMarker={setMarker} />
+     <ClickHandler setMarker={setMarker} setHeatData={setHeatData} />
 
       {marker && (
         <Marker position={marker.position}>
