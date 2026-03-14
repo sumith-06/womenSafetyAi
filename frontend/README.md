@@ -1,70 +1,148 @@
-# Getting Started with Create React App
+# AI Women Safety Map – Hyderabad
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Project Demo
 
-## Available Scripts
+![Women Safety Map](screenshots/map-demo.png)
 
-In the project directory, you can run:
+An AI-powered safety navigation system that helps users identify unsafe areas, view risk scores, and find safer routes using heatmap-based risk analysis.
 
-### `npm start`
+This project was built as part of a hackathon to improve urban safety using geospatial data and AI-based risk prediction.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Features
 
-### `npm test`
+• Interactive safety heatmap of Hyderabad  
+• AI risk prediction when clicking any location  
+• Safe route navigation between source and destination  
+• SOS emergency alert with live location  
+• Unsafe area reporting system  
+• Real-time location detection
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## Tech Stack
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Frontend  
+- React.js
+- React Leaflet
+- Leaflet Heatmap
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Backend  
+- FastAPI
+- Python
+- Uvicorn
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Routing API  
+- OpenStreetMap
+- OSRM routing service
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Project Structure
+womenSafetyAi
+│
+├── frontend
+│ ├── src
+│ │ └── components
+│ │ └── MapView.js
+│
+├── backend
+│ └── main.py
+│
+└── README.md
+---
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Installation
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### 1. Clone repository
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
-## Learn More
+git clone https://github.com/sumith-06/womenSafetyAi.git
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+cd womenSafetyAi
 
-To learn React, check out the [React documentation](https://reactjs.org/).
 
-### Code Splitting
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### 2. Start Backend
 
-### Analyzing the Bundle Size
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+cd backend
 
-### Making a Progressive Web App
+pip install fastapi uvicorn
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+uvicorn main:app --reload
 
-### Advanced Configuration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Backend will run at:
 
-### Deployment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+http://127.0.0.1:8000
 
-### `npm run build` fails to minify
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
+
+### 3. Start Frontend
+
+
+cd frontend
+
+npm install
+
+npm start
+
+
+Frontend runs at:
+
+
+http://localhost:3000
+
+---
+
+## How it Works
+
+1. User clicks any location on the map  
+2. Frontend sends coordinates to FastAPI backend  
+3. Backend calculates safety risk score  
+4. Risk score and status appear as popup  
+5. Heatmap visualizes safe and unsafe zones  
+6. Safe route feature avoids high-risk zones
+
+---
+
+## Example Features
+
+Risk Prediction Popup
+
+• Click any location to view safety score  
+• Displays **Safe / Moderate Risk / High Risk**
+
+SOS Emergency
+
+• Sends user's live location link  
+• Opens Google Maps location
+
+Safe Route Navigation
+
+• Select source and destination  
+• Route generated using OSRM API
+
+---
+
+## Future Improvements
+
+• Crime dataset integration  
+• Machine learning risk prediction model  
+• Real-time police data integration  
+• Night-time safety scoring  
+• Mobile application version
+
+---
+
+## Author
+
+Sumith
+
+GitHub:  
+[https://github.com/sumith-06](https://github.com/sumith-06)
