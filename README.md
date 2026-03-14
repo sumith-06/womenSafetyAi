@@ -39,20 +39,6 @@ Routing API
 
 ---
 
-## Project Structure
-womenSafetyAi
-│
-├── frontend
-│ ├── src
-│ │ └── components
-│ │ └── MapView.js
-│
-├── backend
-│ └── main.py
-│
-└── README.md
----
-
 ## Installation
 
 ### 1. Clone repository
