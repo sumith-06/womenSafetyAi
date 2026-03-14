@@ -63,7 +63,7 @@ function ClickHandler({
 
       try {
 
-  const res = await axios.get("/api/risk", {
+  const res = await axios.get("http://127.0.0.1:8000/risk", {
     params: { lat: lat, lon: lng }
   });
 
