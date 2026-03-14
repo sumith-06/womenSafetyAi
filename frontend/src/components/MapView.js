@@ -218,6 +218,28 @@ function LocateMe({ setMarker }) {
   );
 }
 
+function calculateRiskPenalty(lat, lon, heatData) {
+
+  let penalty = 0;
+
+  for (let zone of heatData) {
+
+    const dist = Math.sqrt(
+      Math.pow(lat - zone[0], 2) +
+      Math.pow(lon - zone[1], 2)
+    );
+
+    if (dist < 0.01) {
+      penalty += zone[2] * 100;
+    }
+
+  }
+
+  return penalty;
+}
+
+
+
 function MapView() {
 
   const center = [17.3457, 78.5520];
@@ -231,20 +253,31 @@ const [destination, setDestination] = useState(null);
 const [route, setRoute] = useState(null);
 const [routeMode, setRouteMode] = useState(false);
 
+
 const getRoute = async () => {
 
   if (!source || !destination) return;
 
   const url = `https://router.project-osrm.org/route/v1/driving/${source[1]},${source[0]};${destination[1]},${destination[0]}?overview=full&geometries=geojson`;
 
-  const res = await axios.get(url);
+  try {
 
-  const coords = res.data.routes[0].geometry.coordinates;
+    const res = await axios.get(url);
 
-  const routeLatLng = coords.map(c => [c[1], c[0]]);
+    const coords = res.data.routes[0].geometry.coordinates;
 
-  setRoute(routeLatLng);
+    const routeLatLng = coords.map(c => [c[1], c[0]]);
+
+    setRoute(routeLatLng);
+
+  } catch (err) {
+
+    console.error("Route error:", err);
+    alert("Could not calculate route");
+
+  }
 };
+
 useEffect(() => {
   if (source && destination) {
     getRoute();
@@ -302,6 +335,50 @@ useEffect(() => {
 return (
 
 <div>
+
+<button
+  onClick={() => {
+
+    if (!navigator.geolocation) {
+      alert("Location not supported");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition((pos) => {
+
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+
+      const mapLink = `https://www.google.com/maps?q=${lat},${lon}`;
+
+      const message =
+`🚨 SOS EMERGENCY ALERT
+
+My current location:
+${mapLink}
+
+Please help me immediately.`;
+
+      alert(message);
+
+      window.open(mapLink, "_blank");
+
+    });
+
+  }}
+  style={{
+    padding: "12px 20px",
+    background: "red",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    fontSize: "16px",
+    marginBottom: "10px",
+    cursor: "pointer"
+  }}
+>
+🚨 SOS EMERGENCY
+</button>
 
 <MapContainer center={center} zoom={13} style={{ height: "500px", width: "100%" }}>
       <TileLayer

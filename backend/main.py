@@ -53,7 +53,6 @@ reports = []
 def report_area(report: Report):
 
     reports.append(report)
-
     return {
         "message": "Report saved",
         "total_reports": len(reports)
